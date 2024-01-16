@@ -31,7 +31,7 @@ jobs:
             |wallet-linux||
             |wallet-macos||
             |wallet-windows.exe||
-          draft: true
+          draft: false
           prerelease: false
 
   create-and-upload-assets:
