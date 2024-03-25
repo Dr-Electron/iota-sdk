@@ -22,7 +22,9 @@ concurrency:
 jobs:
   collect-coverage:
     runs-on: ubuntu-latest
-
+    env:
+      # Set env for Sandbox action
+      COMPOSE_PROFILES: inx-faucet,inx-indexer,inx-mqtt
     steps:
       - uses: actions/checkout@v3
 
@@ -48,8 +50,12 @@ jobs:
       - name: Install nextest
         uses: taiki-e/install-action@nextest
 
-      - name: Start private tangle
-        uses: "./.github/actions/private-tangle/setup"
+      - name: Start Sandbox
+        uses: 'iotaledger/iota-sandbox/.github/actions/setup@add-action'
+        with:
+          branch: add-action
+          protocol_parameters: .github/workflows/protocol_parameters.json
+          milestone_interval: 1s
 
       - name: Start ledger nano
         uses: "./.github/actions/ledger-nano"
@@ -57,9 +63,11 @@ jobs:
       - name: Collect coverage data
         run: cargo ci-coverage
 
-      - name: Tear down private tangle
+      - name: Tear down Sandbox
         if: always()
-        uses: "./.github/actions/private-tangle/tear-down"
+        uses: 'iotaledger/iota-sandbox/.github/actions/tear-down@add-action'
+        with:
+          branch: add-action
 
       - name: Upload coverage data to Coveralls
         uses: coverallsapp/github-action@v2.2.1

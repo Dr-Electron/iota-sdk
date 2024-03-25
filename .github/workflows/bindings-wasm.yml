@@ -44,6 +44,9 @@ jobs:
     name: Test
     if: ${{ ! github.event.schedule }}
     runs-on: ${{ matrix.os }}
+    env:
+      # Set env for Sandbox action
+      COMPOSE_PROFILES: inx-faucet,inx-indexer,inx-mqtt
     strategy:
       fail-fast: false
       matrix:
@@ -82,9 +85,13 @@ jobs:
         working-directory: bindings/wasm/
         run: yarn build
 
-      - name: Start private tangle
+      - name: Start Sandbox
         if: ${{ startsWith(matrix.os, 'ubuntu') }}
-        uses: "./.github/actions/private-tangle/setup"
+        uses: 'iotaledger/iota-sandbox/.github/actions/setup@add-action'
+        with:
+          branch: add-action
+          protocol_parameters: .github/workflows/protocol_parameters.json
+          milestone_interval: 1s
 
       - name: Run Yarn Test
         if: ${{ startsWith(matrix.os, 'ubuntu') }}
@@ -97,9 +104,11 @@ jobs:
         # Only run test that doesn't require a node because we can't use the private tangle script on macos and windows
         run: yarn test -t 'Wallet methods'
 
-      - name: Tear down private tangle
+      - name: Tear down Sandbox
         if: ${{ startsWith(matrix.os, 'ubuntu') }}
-        uses: "./.github/actions/private-tangle/tear-down"
+        uses: 'iotaledger/iota-sandbox/.github/actions/tear-down@add-action'
+        with:
+          branch: add-action
 
   lint:
     name: Lint

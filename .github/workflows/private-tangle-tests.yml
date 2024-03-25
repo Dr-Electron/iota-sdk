@@ -36,6 +36,9 @@ env:
 jobs:
   crate:
     runs-on: ${{ matrix.os }}
+    env:
+      # Set env for Sandbox action
+      COMPOSE_PROFILES: inx-faucet,inx-indexer,inx-mqtt
     strategy:
       fail-fast: false
       matrix:
@@ -58,8 +61,12 @@ jobs:
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
 
-      - name: Start private tangle
-        uses: "./.github/actions/private-tangle/setup"
+      - name: Start Sandbox
+        uses: 'iotaledger/iota-sandbox/.github/actions/setup@add-action'
+        with:
+          branch: add-action
+          protocol_parameters: .github/workflows/protocol_parameters.json
+          milestone_interval: 1s
 
       - name: Start ledger nano
         uses: "./.github/actions/ledger-nano"
@@ -67,6 +74,8 @@ jobs:
       - name: Run tests
         run: cargo ci-tangle-test
 
-      - name: Tear down private tangle
+      - name: Tear down Sandbox
         if: always()
-        uses: "./.github/actions/private-tangle/tear-down"
+        uses: 'iotaledger/iota-sandbox/.github/actions/tear-down@add-action'
+        with:
+          branch: add-action
